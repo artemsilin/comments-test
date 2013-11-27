@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
 	var ParentDiv =	document.createElement('div');
 
+	var isEditClicked = false;
 
 	fillTree(commentsData);
 	FillDivTree(CommentsTree, ParentDiv);
@@ -57,44 +58,61 @@ document.addEventListener('DOMContentLoaded', function(){
 	}
 
 	function FillDivTree(item, DIV) {
-	
+		
         	for(var i=0; i<item.length; i++) {
 				
 				var childDiv = document.createElement('div');
+					childDiv.classList.add('comment');
 				
 				var textWrapper = document.createElement('div');
 					textWrapper.classList.add('comment-text');
 
-				var textArea = document.createElement('input');
-					createElement(textArea, "text", "tA"+i, "tA"+i, item[i].text, 'txt');
-					textArea.disabled = true;
-					textArea.onkeydown=textArea.onkeyup=textArea.onchange=textArea.onkeypress= function(){
-
- 						 	if (this.value.length < 10) {
-
- 						 		this.style.width = '60px';
- 						 		return;
- 						 	}
- 					 	 	this.style.width = this.value.length*7 + "px";
-					};
+				var textArea = document.createElement('span');
+					textArea.innerHTML = item[i].text;
+					textArea.classList.add('txt');
 
 				var buttonEdit = document.createElement("input");
 					createElement(buttonEdit, "button", "butE" + i, "butE" + i, "Edit", 'btn');
-    				buttonEdit.addEventListener('click', editComments(textArea, buttonEdit), false);
 
 				var buttonAdd = document.createElement("input");
 					createElement(buttonAdd, "button", "bE" + i, "bE" + i, "Add", 'btn');
 
+				var editTextArea = document.createElement('div');
+					editTextArea.classList.add('comment');
+					editTextArea.style.display = "none";	
+					
+					var textDiv = document.createElement('div');
+						var textComArea = document.createElement('textarea');	
+							textComArea.innerHTML = '';
+							textComArea.rows = "3";
+							textComArea.cols = "50";
+							textComArea.name = "textComArea" + i;
+							textComArea.addEventListener('change', changeComments(textComArea), false);
 
+					textDiv.appendChild(textComArea);
+
+					var buttonDiv = document.createElement('div');	
+						var buttonOk = document.createElement("input");
+							createElement(buttonOk, "button", "butE" + i, "butE" + i, "Ok", 'btn1');
+						var buttonCancel = document.createElement("input");
+							createElement(buttonCancel, "button", "bE" + i, "bE" + i, "Cancel", 'btn1');
+
+					buttonDiv.appendChild(buttonOk);
+					buttonDiv.appendChild(buttonCancel);
+					
+				editTextArea.appendChild(textDiv);
+				editTextArea.appendChild(buttonDiv);	
+				
 				textWrapper.appendChild(textArea);
 				textWrapper.appendChild(buttonEdit);
 				textWrapper.appendChild(buttonAdd);
 
 				childDiv.appendChild(textWrapper);
-					childDiv.classList.add('comment');
 
 
-				buttonAdd.addEventListener('click', addComments(item, i, childDiv, DIV), false);
+    			buttonEdit.addEventListener('click', editComments(editTextArea,  true), false);
+				buttonOk.addEventListener('click', commentsNewEdit(item[i], childDiv, DIV, editTextArea, textArea, textComArea), false);
+				buttonAdd.addEventListener('click', editComments(editTextArea,  false), false);
 
 
 					if (item[i].comments.length > 0) {
@@ -102,31 +120,21 @@ document.addEventListener('DOMContentLoaded', function(){
 						var commentsList = document.createElement('div');
 							commentsList.classList.add('comments-list');
 
+						childDiv.appendChild(editTextArea);
 						childDiv.appendChild(commentsList);
 						DIV.appendChild(childDiv);
+
 						
 						FillDivTree(item[i].comments, commentsList);
 	
 					} else {
-	
+
+						childDiv.appendChild(editTextArea);
 						DIV.appendChild(childDiv);
+						
 						continue;
 					}
         	}
-	}
-
-	function editComments (commentArea, btn) {
-		return function() {
-			if (btn.value === "Edit") {
-
-				commentArea.disabled = false;
-				btn.value = "Save";
-			} else  {
-
-				commentArea.disabled = true;
-				btn.value = "Edit";
-			}
-		}
 	}
 
 	function createElement (obj, _type, _id, _name, _value, _class) {
@@ -140,36 +148,57 @@ document.addEventListener('DOMContentLoaded', function(){
 		}
 	}
 
-	function addComments(obj, i, div, parentDiv) {
+	function editComments (editDiv, isEdClick) {
 		return function() {
+			isEditClicked = isEdClick;
+			editDiv.style.display = "block";
+		}
+	}
 
-			var newComment = new Comment(getId(), "New", obj[i].id);
+	function newComments () {
 
-			if (obj[i].comments.length < 1) {
-					
-				obj[i].comments.push(newComment);
+
+
+	}
+
+	function commentsNewEdit(obj, div, parentDiv, editTextArea, commentArea,  editArea) {
+		return function() {
+			if (!isEditClicked) {
+
+				var newComment = new Comment(getId(), editArea.innerHTML, obj.id);
 
 				var commentsList = document.createElement('div');
 					commentsList.classList.add('comments-list');
 
 				div.appendChild(commentsList);
-				parentDiv.appendChild(div);
+
+				if (obj.comments.length < 1) {
+					
+					obj.comments.push(newComment);
+
+					parentDiv.appendChild(div);
 						
-				FillDivTree(obj[i].comments, commentsList);
+					FillDivTree(obj.comments, commentsList);
 	
+				} else {
+
+					var a = [];
+						a.push(newComment);
+
+					FillDivTree(a, commentsList);		
+				}
 			} else {
-
-				obj[i].comments.push(newComment);
-				
-				// var commentsList = document.createElement('div');
-				// 	commentsList.classList.add('comment');
-
-				//div.appendChild(commentsList);
-				//parentDiv.appendChild(div);
-				//alert(div.innerHTML);
-				FillDivTree(obj[i].comments[obj[i].comments.length-1], div.childDiv);
-				
+				editArea.text = commentArea.innerHTML;
+				commentArea.innerHTML = editArea.innerHTML;
 			}
+			editTextArea.style.display = 'none';
+			isEditClicked = false;
+		}
+	}
+
+	function changeComments(textComArea) {
+		return function () {
+			textComArea.innerHTML = textComArea.value;
 		}
 	}
 
