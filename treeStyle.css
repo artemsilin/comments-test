@@ -1,0 +1,40 @@
+body {
+	margin: 0;
+	font-family: Arial;
+}
+
+.comments-list {
+	margin-left: 50px;
+	font-size: 12px;
+	position: relative;
+
+}
+
+.comment {
+	position: relative;
+	margin: 5px 0;
+}
+
+.comments-wrapper {
+	width: 700px;
+	margin: auto;
+}
+
+.comment-text {
+	font-size: 13px;
+	padding: 3px 10px;
+	border-radius: 3px;
+	box-shadow: 0 2px 8px 0px rgba(0,0,0,0.25);
+	display: in;
+	/*display: inline ;*/
+}
+
+.btn {
+	margin-left: 25px;
+	/*float: left;
+	display: inline ;*/
+}
+
+.txt {
+	width: auto;
+}
